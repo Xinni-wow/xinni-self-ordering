@@ -154,15 +154,15 @@ const delete_btn = (row: any) => {
         <!-- scope 的父组件是 el-table -->
         <template #default="scope">
           <!-- <el-button @click="update_btn(scope.row)" type="primary">修改</el-button> -->
-          <el-button @click="update_btn(scope.row)" type="primary" :disabled="userInfoStore.userInfo?.account !== 'cyh'
+          <el-button @click="update_btn(scope.row)" type="primary" :disabled="userInfoStore.userInfo?.account !== 'xinni'
             && userInfoStore.userInfo?.account !== scope.row.account ? true : false">修改
           </el-button>
           <el-button @click="change_btn(scope.row)" plain :type="scope.row.status === 1 ? 'danger' : 'primary'"
-            :disabled="userInfoStore.userInfo?.account !== 'cyh' ? true : false">
+            :disabled="userInfoStore.userInfo?.account !== 'xinni' ? true : false">
             {{ scope.row.status === 1 ? '禁用' : '启用' }}
           </el-button>
           <el-button @click="delete_btn(scope.row)" type="danger"
-            :disabled="userInfoStore.userInfo?.account !== 'cyh' ? true : false">删除
+            :disabled="userInfoStore.userInfo?.account !== 'xinni' ? true : false">删除
           </el-button>
         </template>
       </el-table-column>

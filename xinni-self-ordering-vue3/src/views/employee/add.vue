@@ -5,7 +5,7 @@ import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 
 // ------ 数据 ------
-const formLabelWidth = '60px'
+const formLabelWidth = '80px'
 const form = reactive({
   id: 0,
   name: '',
@@ -14,6 +14,7 @@ const form = reactive({
   phone: '',
   age: '',
   gender: '',
+  idNumber: '',
   pic: '',
 })
 const genders = [
@@ -71,6 +72,10 @@ const rules = {
   gender: [
     { required: true, trigger: 'blur', message: '不能为空' },
   ],
+  idNumber: [
+    { required: true, trigger: 'blur', message: '不能为空' },
+    { pattern: /^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$/, message: '身份证号格式不正确', trigger: 'blur' }
+  ]
 }
 
 
@@ -179,6 +184,9 @@ init()
           <el-option v-for="item in genders" :key="item.value" :label="item.label" :value="item.value" />
         </el-select>
         <!-- <el-input v-model="form.gender" autocomplete="off" /> -->
+      </el-form-item>
+      <el-form-item label="身份证号" :label-width="formLabelWidth" prop="idNumber">
+        <el-input v-model="form.idNumber" autocomplete="off" />
       </el-form-item>
       <el-form-item label="头像" :label-width="formLabelWidth" prop="pic">
         <img class="the_img" v-if="!form.pic" src="/src/assets/image/user_default.png" alt="" />

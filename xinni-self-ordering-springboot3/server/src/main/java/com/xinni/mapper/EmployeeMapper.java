@@ -16,14 +16,14 @@ public interface EmployeeMapper {
     @Select("select * from employee where account = #{account}")
     Employee getByAccount(String account);
 
-    @Insert("insert into employee (name, account, password, phone, age, gender, pic, status, create_user, update_user, create_time, update_time) VALUES " +
-            "(#{name}, #{account}, #{password}, #{phone}, #{age}, #{gender}, #{pic}, #{status}, #{createUser}, #{updateUser}, #{createTime}, #{updateTime})")
+    @Insert("insert into employee (name, account, password, phone, age, gender,id_number, pic, status, create_user, update_user, create_time, update_time) VALUES " +
+            "(#{name}, #{account}, #{password}, #{phone}, #{age}, #{gender}, #{idNumber},#{pic}, #{status}, #{createUser}, #{updateUser}, #{createTime}, #{updateTime})")
     @AutoFill(value = OperationType.REG)
         // 由于员工自己注册，但还没注册无法拿到线程id，所以createUser、updateUser只能先手动设置100表示自己操作，填充另外2个time字段就行
     void regEmployee(Employee employee);
 
-    @Insert("insert into employee (name, account, password, phone, age, gender, pic, status, create_user, update_user, create_time, update_time) VALUES " +
-            "(#{name}, #{account}, #{password}, #{phone}, #{age}, #{gender}, #{pic}, #{status}, #{createUser}, #{updateUser}, #{createTime}, #{updateTime})")
+    @Insert("insert into employee (name, account, password, phone, age, gender,id_number, pic, status, create_user, update_user, create_time, update_time) VALUES " +
+            "(#{name}, #{account}, #{password}, #{phone}, #{age}, #{gender}, #{idNumber}, #{pic}, #{status}, #{createUser}, #{updateUser}, #{createTime}, #{updateTime})")
     @AutoFill(value = OperationType.INSERT)
     void addEmployee(Employee employee);
 
