@@ -33,7 +33,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     };
   }
 });
-const App = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "D:/hanye-take-out-main/hanye-take-out-main/hanye-take-out-uniapp/src/App.vue"]]);
+const App = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "D:/xinni-self-ordering-main/xinni-self-ordering/xinni-self-ordering-uniapp/src/App.vue"]]);
 const pinia = common_vendor.createPinia();
 pinia.use(common_vendor.src_default);
 function createApp() {

@@ -1,30 +1,36 @@
 <template>
   <view class="order_content">
     <scroll-view class="order_content_box" scroll-y scroll-top="0rpx">
-      <!-- 地址栏 -->
-      <view class="new_address">
-        <!-- 上部 -->
-        <view class="top" @click="goAddress">
-          <view v-if="!address" class="address_name_disabled"> 请选择收货地址 </view>
-          <view v-if="address" class="address_name">
-            <view class="address">
-              <text class="tag" :class="'tag' + trans(label as string)"> {{ label || '其他' }} </text>
-              <text class="word">{{ address }}</text>
-            </view>
-            <view class="name">
-              <text class="name_1">{{ consignee }}</text>
-              <text class="name_2">{{ phoneNumber }}</text>
-            </view>
+      <!-- 用餐方式选择 -->
+      <view class="dine_type">
+        <view class="title"></view>
+        <view class="options">
+          <view
+            class="option"
+            :class="{ active: dineType === 1 }"
+            @click="selectDineType(1)"
+          >
+            <image
+              class="icon"
+              :src="dineType === 1 ? '../../static/icon/table_active.png' : '../../static/icon/table.png'"
+            ></image>
+            <text style="font-size: large;">堂食</text>
           </view>
-          <view class="address_image">
-            <image class="to_right" src="../../static/icon/toRight.png"></image>
+          <view
+            class="option"
+            :class="{ active: dineType === 2 }"
+            @click="selectDineType(2)"
+          >
+            <image
+              class="icon"
+              :src="dineType === 2 ? '../../static/icon/package_active.png' : '../../static/icon/package.png'"
+            ></image>
+            <text style="font-size: large;">打包</text>
           </view>
-        </view>
-        <!-- 下部 -->
-        <view class="bottom">
-          <text class="word_bottom">预计{{ arrivalTime }}送达</text>
         </view>
       </view>
+
+
       <!-- 两个白框栏 -->
       <view class="order_list_cont">
         <!-- 1、订单菜品列表 -->
@@ -46,20 +52,16 @@
                 <view class="dish_price"> <text class="ico">￥</text> {{ obj.amount }} </view>
               </view>
             </view>
-            <view class="word_text">
+            <view class="word_text" v-if="dineType === 2">
               <view class="word_left">打包费</view>
               <view class="word_right">￥{{ CartAllNumber }}</view>
-            </view>
-            <view class="word_text">
-              <view class="word_left">配送费</view>
-              <view class="word_right">￥6</view>
             </view>
             <view class="all_price">
               <text class="word_right">总价 ￥{{ CartAllPrice }}</text>
             </view>
           </view>
         </view>
-        <!-- 2、备注+餐具份数+发票 -->
+        <!-- 2、备注+餐具份数 -->
         <view class="order_list">
           <view class="bottom_text" @click="goRemark">
             <view class="text_left">备注</view>
@@ -74,10 +76,6 @@
             <view class="right_image">
               <image class="to_right" src="../../static/icon/toRight.png"></image>
             </view>
-          </view>
-          <view class="bottom_text">
-            <view class="text_left">发票</view>
-            <view class="text_right">本店不支持线上发票，请致电商家提供</view>
           </view>
         </view>
       </view>
@@ -130,7 +128,6 @@
 </template>
 
 <script lang="ts" setup>
-import {getDefaultAddressAPI} from '@/api/address'
 import {getCartAPI} from '@/api/cart'
 import {submitOrderAPI, getUnPayOrderAPI} from '@/api/order'
 import type {CartItem} from '@/types/cart'
@@ -146,15 +143,8 @@ const cartList = ref<CartItem[]>([])
 const CartAllNumber = ref(0)
 const CartAllPrice = ref(0)
 
-// 收货地址信息，如果有选择好后跳回来，则在路径参数里拿到这个address地址信息
-const address = ref('')
-const label = ref('')
-const consignee = ref('')
-const gender = ref(0)
-const phoneNumber = ref('')
-
-// 预计送达时间
-const estimatedDeliveryTime = ref('')
+// 用餐方式 1:堂食 2:打包
+const dineType = ref(1)
 
 const platform = ref('ios')
 
@@ -166,7 +156,6 @@ const radioStatus = ref(false)
 
 const remark = ref('')
 const arrivalTime = ref('')
-const addressId = ref(0)
 
 // 查询获取购物车列表
 const getCartList = async () => {
@@ -175,32 +164,21 @@ const getCartList = async () => {
   cartList.value = res.data
   // 计算总数量
   CartAllNumber.value = cartList.value.reduce((acc, cur) => acc + cur.number, 0)
-  // 计算总价格 = 菜品总价 + 打包费 + 配送费
-  CartAllPrice.value = cartList.value.reduce((acc, cur) => acc + cur.amount * cur.number, 0) + CartAllNumber.value + 6
+  // 计算总价格 = 菜品总价 + 打包费 (打包费仅在打包时收取)
+  CartAllPrice.value = cartList.value.reduce((acc, cur) => acc + cur.amount * cur.number, 0) +
+                      (dineType.value === 2 ? CartAllNumber.value : 0)
   console.log('CartAllNumber', CartAllNumber.value)
   console.log('CartAllPrice', CartAllPrice.value)
 }
 
 onLoad(async (options: any) => {
-  // 先加载默认地址(如果有的话)
-  await getAddressBookDefault()
-  // 再看看路径参数有没有传过来的地址，有的话以这个地址为准
   console.log('options', options)
-  if (options.address) {
-    const addressObj = JSON.parse(options.address)
-    console.log('获取新的地址啊！addressObj', addressObj)
-    addressId.value = addressObj.id
-    label.value = addressObj.label
-    address.value = addressObj.provinceName + addressObj.cityName + addressObj.districtName + addressObj.detail
-    phoneNumber.value = addressObj.phone
-    consignee.value = addressObj.consignee
-  } else if (options.remark) {
+  if (options.remark) {
     remark.value = options.remark
   }
-  console.log('我地址id赋值了啊1-------------', addressId.value)
   // 获取购物车列表
   await getCartList()
-  // 获取一小时以后的时间，作为预计送达的时间
+  // 获取一小时以后的时间，作为预计取餐的时间
   getHarfAnOur()
   // 默认选择的餐具状态
   if (store.defaultCook === '无需餐具') {
@@ -248,27 +226,19 @@ const getHarfAnOur = () => {
   const date = new Date()
   date.setTime(date.getTime() + 3600000)
   const formattedDate = DateToStr(date)
-  estimatedDeliveryTime.value = formattedDate
   let hours = date.getHours()
   let minutes = date.getMinutes()
   if (hours < 10) hours = parseInt('0' + hours)
   if (minutes < 10) minutes = parseInt('0' + minutes)
   arrivalTime.value = hours + ':' + minutes
 }
-// 默认地址查询
-const getAddressBookDefault = async () => {
-  const res = await getDefaultAddressAPI()
-  if (res.code === 0) {
-    console.log('默认地址', res.data)
-    addressId.value = 0
-    if (res.data.provinceName) {
-      address.value = res.data.provinceName + res.data.cityName + res.data.districtName + res.data.detail
-    }
-    phoneNumber.value = res.data.phone as string
-    consignee.value = res.data.consignee as string
-    gender.value = res.data.gender as number
-    addressId.value = res.data.id as number
-  }
+
+// 选择用餐方式
+const selectDineType = (type: number) => {
+  dineType.value = type
+  // 重新计算价格（打包需要加打包费）
+  CartAllPrice.value = cartList.value.reduce((acc, cur) => acc + cur.amount * cur.number, 0) +
+                      (dineType.value === 2 ? CartAllNumber.value : 0)
 }
 
 // 标签文字转数字
@@ -283,15 +253,6 @@ const trans = (item: string) => {
     default:
       return '4'
   }
-}
-
-// 去地址页面
-const goAddress = () => {
-  // 记录等下跳转到地址管理后，选好地址要返回当前这个订单页面
-  store.addressBackUrl = '/pages/submit/submit'
-  uni.redirectTo({
-    url: '/pages/address/address',
-  })
 }
 
 // 去备注页面
@@ -327,7 +288,6 @@ const radioChange = () => {
 }
 const closeMask = () => {
   openCooker.value = false
-  // openPayType.value = false
 }
 
 // 支付下单
@@ -343,13 +303,6 @@ const payOrderHandle = async () => {
     })
     return false
   }
-  if (!address.value) {
-    uni.showToast({
-      title: '请选择收货地址',
-      icon: 'none',
-    })
-    return false
-  }
   // 餐具： -2未选择，-1无需餐具，0商家依据餐量提供，其他数字具体数量
   if (cookerNum.value === -2) {
     uni.showToast({
@@ -358,24 +311,22 @@ const payOrderHandle = async () => {
     })
     return false
   }
-  console.log('我传地址id了啊2--------------', addressId.value)
+
   const params = {
-    payMethod: 1,
-    addressId: addressId.value,
+    payMethod: 1, // 默认微信支付
     remark: remark.value,
-    estimatedDeliveryTime: estimatedDeliveryTime.value, // 预计到达时间
-    deliveryStatus: 1, // 立即送出
+    pickupStatus: 1, // 默认立即制作
     tablewareNumber: cookerNum.value, // 餐具份数
     tablewareStatus: cookerNum.value === 0 ? 1 : 0, // 餐具状态: 1按餐量提供，0选择具体数量
-    packAmount: CartAllNumber.value,
+    packAmount: dineType.value === 2 ? CartAllNumber.value : 0, // 打包费仅在打包时收取
     amount: CartAllPrice.value,
+    dineType: dineType.value // 用餐方式 1:堂食 2:打包
   }
   console.log('生成订单params', params)
   const res = await submitOrderAPI(params)
   if (res.code === 0) {
     console.log('订单生成成功', res.data)
     // 此时订单已生成，跳转到支付页面
-    // uni.navigateTo({url: '/pages/order/success'})
     uni.redirectTo({
       url:
         '/pages/pay/pay?' +
@@ -416,172 +367,60 @@ const payOrderHandle = async () => {
     }
   }
   box-sizing: border-box;
-  .restaurant_info_box {
-    position: relative;
-    width: 100%;
-    height: 160rpx;
-    // 注释掉背景色
-    .restaurant_info {
-      position: absolute;
-      z-index: 9;
-      left: 30rpx;
-      // transform: translateX(-50%);
+
+  // 用餐方式选择
+  .dine_type {
+    width: 730rpx;
+    height: 200rpx;
+    background-color: #fff;
+    margin: 0 auto 20rpx;
+    border-radius: 12rpx;
+    padding: 20rpx;
+    box-sizing: border-box;
+
+    .title {
+      font-size: 32rpx;
+      font-weight: bold;
+      margin-bottom: 20rpx;
+      color: #333;
+    }
+
+    .options {
       display: flex;
-      width: calc(100% - 60rpx);
-      // margin:0 auto;
-      background: rgba(255, 255, 255, 0.97);
-      box-shadow: 0px 4rpx 10rpx 0px rgba(69, 69, 69, 0.1);
-      border-radius: 16rpx;
-      padding: 40rpx;
-      box-sizing: border-box;
-      .left_info {
-        flex: 1;
-        .title {
-          font-size: 36rpx;
+      justify-content: space-around;
+
+      .option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 20rpx;
+        border-radius: 10rpx;
+        border: 2rpx solid #ddd;
+
+        &.active {
+          border-color: #00aaff;
+          background-color: #e6f7ff;
         }
-        .position {
-          font-size: 36rpx;
+
+        .icon {
+          width: 180rpx;
+          height: 20rpx;
+          margin-bottom: 10rpx;
         }
-      }
-      .restaurant_logo {
-        .restaurant_logo_img {
-          display: block;
-          width: 320rpx;
-          height: 120rpx;
-          border-radius: 16rpx;
+
+        text {
+          font-size: 28rpx;
         }
       }
     }
   }
 
-  // 地址栏
-  .new_address {
+  // 预计取餐时间
+  .pickup_time {
     width: 730rpx;
-    height: 240rpx;
     background-color: #fff;
-    margin: 0 auto;
+    margin: 0 auto 20rpx;
     border-radius: 12rpx;
-    z-index: 10;
-    margin-bottom: 20rpx;
-    display: flex;
-    flex-direction: column;
-
-    // 上部
-    .top {
-      margin: 0 22rpx 0 30rpx;
-      flex: 1;
-      display: flex;
-      // align-items: center;
-      .address_name {
-        flex: 1;
-        // display: flex;
-        // flex-direction: column;
-        overflow: hidden;
-        .address {
-          // flex: 1;
-          height: 50rpx;
-          line-height: 50rpx;
-          margin-top: 22rpx;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          // 标签
-          .tag {
-            display: inline-block;
-            width: 70rpx;
-            height: 45rpx;
-            border-radius: 4rpx;
-            margin-right: 20rpx;
-            font-size: 25rpx;
-            line-height: 45rpx;
-            color: #333333;
-            text-align: center;
-            background: #e1f1fe;
-          }
-
-          .tag2 {
-            background: #fef8e7;
-          }
-
-          .tag3 {
-            background: #e7fef8;
-          }
-
-          .tag4 {
-            background: #fee7e7;
-          }
-          .word {
-            vertical-align: middle;
-            opacity: 1;
-            font-size: 32rpx;
-            font-family: PingFangSC, PingFangSC-Medium;
-            font-weight: 550;
-            color: #20232a;
-          }
-        }
-        .name {
-          // flex: 1;
-          height: 34rpx;
-          line-height: 34rpx;
-          margin-top: 8rpx;
-          .name_1,
-          .name_2 {
-            opacity: 1;
-            font-size: 26rpx;
-            font-family: PingFangSC, PingFangSC-Regular;
-            font-weight: 400;
-            text-align: center;
-            color: #333333;
-          }
-          .name_2 {
-            margin-left: 10rpx;
-          }
-        }
-      }
-      .address_name_disabled {
-        flex: 1;
-        font-size: 32rpx;
-        font-family: PingFangSC, PingFangSC-Regular;
-        font-weight: 400;
-        color: #bdbdbd;
-        align-self: center;
-      }
-      .address_image {
-        width: 80rpx;
-        height: 100%;
-        position: relative;
-        .to_right {
-          width: 30rpx;
-          height: 30rpx;
-          vertical-align: middle;
-          margin-bottom: 10rpx;
-          position: absolute;
-          top: 50%;
-          right: 6rpx;
-          transform: translateY(-50%);
-        }
-      }
-    }
-    // 下部
-    .bottom {
-      margin: 0 28rpx;
-      height: 94rpx;
-      // line-height: 94rpx;
-      border-top: 1px dashed #ebebeb;
-      box-sizing: border-box;
-      .word_bottom {
-        opacity: 1;
-        font-size: 26rpx;
-        font-family: PingFangSC, PingFangSC-Regular;
-        font-weight: 400;
-        text-align: left;
-        color: #333333;
-        height: 34rpx;
-        line-height: 34rpx;
-        margin-top: 24rpx;
-        display: inline-block;
-      }
-    }
   }
 
   // 订单container，包括订单明细+备注

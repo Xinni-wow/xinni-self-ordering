@@ -1,6 +1,5 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
-const api_address = require("../../api/address.js");
 const api_cart = require("../../api/cart.js");
 const api_order = require("../../api/order.js");
 const stores_modules_address = require("../../stores/modules/address.js");
@@ -13,12 +12,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     const cartList = common_vendor.ref([]);
     const CartAllNumber = common_vendor.ref(0);
     const CartAllPrice = common_vendor.ref(0);
-    const address = common_vendor.ref("");
-    const label = common_vendor.ref("");
-    const consignee = common_vendor.ref("");
-    const gender = common_vendor.ref(0);
-    const phoneNumber = common_vendor.ref("");
-    const estimatedDeliveryTime = common_vendor.ref("");
+    const dineType = common_vendor.ref(1);
     common_vendor.ref("ios");
     const openCooker = common_vendor.ref(false);
     const cookerNum = common_vendor.ref(-2);
@@ -26,31 +20,20 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     const radioStatus = common_vendor.ref(false);
     const remark = common_vendor.ref("");
     const arrivalTime = common_vendor.ref("");
-    const addressId = common_vendor.ref(0);
     const getCartList = async () => {
       const res = await api_cart.getCartAPI();
       console.log("初始化购物车列表", res);
       cartList.value = res.data;
       CartAllNumber.value = cartList.value.reduce((acc, cur) => acc + cur.number, 0);
-      CartAllPrice.value = cartList.value.reduce((acc, cur) => acc + cur.amount * cur.number, 0) + CartAllNumber.value + 6;
+      CartAllPrice.value = cartList.value.reduce((acc, cur) => acc + cur.amount * cur.number, 0) + (dineType.value === 2 ? CartAllNumber.value : 0);
       console.log("CartAllNumber", CartAllNumber.value);
       console.log("CartAllPrice", CartAllPrice.value);
     };
     common_vendor.onLoad(async (options) => {
-      await getAddressBookDefault();
       console.log("options", options);
-      if (options.address) {
-        const addressObj = JSON.parse(options.address);
-        console.log("获取新的地址啊！addressObj", addressObj);
-        addressId.value = addressObj.id;
-        label.value = addressObj.label;
-        address.value = addressObj.provinceName + addressObj.cityName + addressObj.districtName + addressObj.detail;
-        phoneNumber.value = addressObj.phone;
-        consignee.value = addressObj.consignee;
-      } else if (options.remark) {
+      if (options.remark) {
         remark.value = options.remark;
       }
-      console.log("我地址id赋值了啊1-------------", addressId.value);
       await getCartList();
       getHarfAnOur();
       if (store.defaultCook === "无需餐具") {
@@ -75,8 +58,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     const getHarfAnOur = () => {
       const date = /* @__PURE__ */ new Date();
       date.setTime(date.getTime() + 36e5);
-      const formattedDate = DateToStr(date);
-      estimatedDeliveryTime.value = formattedDate;
+      DateToStr(date);
       let hours = date.getHours();
       let minutes = date.getMinutes();
       if (hours < 10)
@@ -85,37 +67,9 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
         minutes = parseInt("0" + minutes);
       arrivalTime.value = hours + ":" + minutes;
     };
-    const getAddressBookDefault = async () => {
-      const res = await api_address.getDefaultAddressAPI();
-      if (res.code === 0) {
-        console.log("默认地址", res.data);
-        addressId.value = 0;
-        if (res.data.provinceName) {
-          address.value = res.data.provinceName + res.data.cityName + res.data.districtName + res.data.detail;
-        }
-        phoneNumber.value = res.data.phone;
-        consignee.value = res.data.consignee;
-        gender.value = res.data.gender;
-        addressId.value = res.data.id;
-      }
-    };
-    const trans = (item) => {
-      switch (item) {
-        case "公司":
-          return "1";
-        case "家":
-          return "2";
-        case "学校":
-          return "3";
-        default:
-          return "4";
-      }
-    };
-    const goAddress = () => {
-      store.addressBackUrl = "/pages/submit/submit";
-      common_vendor.index.redirectTo({
-        url: "/pages/address/address"
-      });
+    const selectDineType = (type) => {
+      dineType.value = type;
+      CartAllPrice.value = cartList.value.reduce((acc, cur) => acc + cur.amount * cur.number, 0) + (dineType.value === 2 ? CartAllNumber.value : 0);
     };
     const goRemark = () => {
       common_vendor.index.redirectTo({
@@ -163,13 +117,6 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
         });
         return false;
       }
-      if (!address.value) {
-        common_vendor.index.showToast({
-          title: "请选择收货地址",
-          icon: "none"
-        });
-        return false;
-      }
       if (cookerNum.value === -2) {
         common_vendor.index.showToast({
           title: "请选择餐具份数",
@@ -177,21 +124,21 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
         });
         return false;
       }
-      console.log("我传地址id了啊2--------------", addressId.value);
       const params = {
         payMethod: 1,
-        addressId: addressId.value,
+        // 默认微信支付
         remark: remark.value,
-        estimatedDeliveryTime: estimatedDeliveryTime.value,
-        // 预计到达时间
-        deliveryStatus: 1,
-        // 立即送出
+        pickupStatus: 1,
+        // 默认立即制作
         tablewareNumber: cookerNum.value,
         // 餐具份数
         tablewareStatus: cookerNum.value === 0 ? 1 : 0,
         // 餐具状态: 1按餐量提供，0选择具体数量
-        packAmount: CartAllNumber.value,
-        amount: CartAllPrice.value
+        packAmount: dineType.value === 2 ? CartAllNumber.value : 0,
+        // 打包费仅在打包时收取
+        amount: CartAllPrice.value,
+        dineType: dineType.value
+        // 用餐方式 1:堂食 2:打包
       };
       console.log("生成订单params", params);
       const res = await api_order.submitOrderAPI(params);
@@ -209,19 +156,13 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     };
     return (_ctx, _cache) => {
       return common_vendor.e({
-        a: !address.value
-      }, !address.value ? {} : {}, {
-        b: address.value
-      }, address.value ? {
-        c: common_vendor.t(label.value || "其他"),
-        d: common_vendor.n("tag" + trans(label.value)),
-        e: common_vendor.t(address.value),
-        f: common_vendor.t(consignee.value),
-        g: common_vendor.t(phoneNumber.value)
-      } : {}, {
-        h: common_vendor.o(goAddress),
-        i: common_vendor.t(arrivalTime.value),
-        j: common_vendor.f(cartList.value, (obj, index, i0) => {
+        a: dineType.value === 1 ? "../../static/icon/table_active.png" : "../../static/icon/table.png",
+        b: dineType.value === 1 ? 1 : "",
+        c: common_vendor.o(($event) => selectDineType(1)),
+        d: dineType.value === 2 ? "../../static/icon/package_active.png" : "../../static/icon/package.png",
+        e: dineType.value === 2 ? 1 : "",
+        f: common_vendor.o(($event) => selectDineType(2)),
+        g: common_vendor.f(cartList.value, (obj, index, i0) => {
           return common_vendor.e({
             a: obj.pic,
             b: common_vendor.t(obj.name),
@@ -237,34 +178,37 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
             h: index
           });
         }),
-        k: common_vendor.t(CartAllNumber.value),
-        l: common_vendor.t(CartAllPrice.value),
-        m: common_vendor.t(remark.value || "选择口味等"),
-        n: common_vendor.o(goRemark),
-        o: common_vendor.t(getCookerInfo()),
-        p: common_vendor.o(chooseCooker),
-        q: common_vendor.t(CartAllNumber.value),
-        r: common_vendor.t(parseFloat((Math.round(CartAllPrice.value * 100) / 100).toFixed(2))),
-        s: common_vendor.o(($event) => payOrderHandle()),
-        t: common_vendor.o(closeMask),
-        v: common_vendor.f(cookers.value, (item, k0, i0) => {
+        h: dineType.value === 2
+      }, dineType.value === 2 ? {
+        i: common_vendor.t(CartAllNumber.value)
+      } : {}, {
+        j: common_vendor.t(CartAllPrice.value),
+        k: common_vendor.t(remark.value || "选择口味等"),
+        l: common_vendor.o(goRemark),
+        m: common_vendor.t(getCookerInfo()),
+        n: common_vendor.o(chooseCooker),
+        o: common_vendor.t(CartAllNumber.value),
+        p: common_vendor.t(parseFloat((Math.round(CartAllPrice.value * 100) / 100).toFixed(2))),
+        q: common_vendor.o(($event) => payOrderHandle()),
+        r: common_vendor.o(closeMask),
+        s: common_vendor.f(cookers.value, (item, k0, i0) => {
           return {
             a: common_vendor.t(item === -1 ? "无需餐具" : item === 0 ? "商家依据餐量提供" : item === 11 ? "10份以上" : item + "份"),
             b: item
           };
         }),
-        w: cookers.value,
-        x: common_vendor.o(pickerChange),
-        y: radioStatus.value,
-        z: common_vendor.o(radioChange),
-        A: common_vendor.t(cookerNum.value === -2 || cookerNum.value === -1 ? "以后都无需餐具" : "以后都需要餐具，商家依据餐量提供"),
-        B: common_vendor.o(($event) => openCooker.value = !openCooker.value),
-        C: common_vendor.o(($event) => openCooker.value = openCooker.value),
-        D: openCooker.value,
-        E: common_vendor.o(($event) => openCooker.value = !openCooker.value)
+        t: cookers.value,
+        v: common_vendor.o(pickerChange),
+        w: radioStatus.value,
+        x: common_vendor.o(radioChange),
+        y: common_vendor.t(cookerNum.value === -2 || cookerNum.value === -1 ? "以后都无需餐具" : "以后都需要餐具，商家依据餐量提供"),
+        z: common_vendor.o(($event) => openCooker.value = !openCooker.value),
+        A: common_vendor.o(($event) => openCooker.value = openCooker.value),
+        B: openCooker.value,
+        C: common_vendor.o(($event) => openCooker.value = !openCooker.value)
       });
     };
   }
 });
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-fb87e98c"], ["__file", "D:/hanye-take-out-main/hanye-take-out-main/hanye-take-out-uniapp/src/pages/submit/submit.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-fb87e98c"], ["__file", "D:/xinni-self-ordering-main/xinni-self-ordering/xinni-self-ordering-uniapp/src/pages/submit/submit.vue"]]);
 wx.createPage(MiniProgramPage);

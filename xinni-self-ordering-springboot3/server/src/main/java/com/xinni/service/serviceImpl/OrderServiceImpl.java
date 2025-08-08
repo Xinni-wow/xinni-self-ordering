@@ -29,11 +29,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,6 +64,9 @@ public class OrderServiceImpl implements OrderService {
     @Value("${hanye.baidu.ak}")
     private String ak;
 
+    // 用于生成取餐号的计数器
+    private static volatile Map<LocalDate, Integer> pickupNumberCounter = new ConcurrentHashMap<>();
+
     /**
      * 用户下单
      *
@@ -68,13 +74,13 @@ public class OrderServiceImpl implements OrderService {
      * @return
      */
     public OrderSubmitVO submit(OrderSubmitDTO orderSubmitDTO) {
-        // 1、查询校验地址情况
-        AddressBook addressBook = addressBookMapper.getById(orderSubmitDTO.getAddressId());
-        if (addressBook == null) {
-            throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
-        }
-        // 不能超出配送范围
-        // checkOutOfRange(addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
+//        // 1、查询校验地址情况
+//        AddressBook addressBook = addressBookMapper.getById(orderSubmitDTO.getAddressId());
+//        if (addressBook == null) {
+//            throw new AddressBookBusinessException(MessageConstant.ADDRESS_BOOK_IS_NULL);
+//        }
+//        // 不能超出配送范围
+//        // checkOutOfRange(addressBook.getCityName() + addressBook.getDistrictName() + addressBook.getDetail());
         // 2、查询校验购物车情况
         Integer userId = BaseContext.getCurrentId();
         Cart cart = new Cart();
@@ -86,16 +92,21 @@ public class OrderServiceImpl implements OrderService {
         // 3、构建订单数据
         Order order = new Order();
         BeanUtils.copyProperties(orderSubmitDTO, order);
-        order.setAddressBookId(orderSubmitDTO.getAddressId());
-        order.setPhone(addressBook.getPhone());
-        order.setAddress(addressBook.getDetail());
-        order.setConsignee(addressBook.getConsignee());
+//        order.setAddressBookId(orderSubmitDTO.getAddressId());
+//        order.setPhone(addressBook.getPhone());
+//        order.setAddress(addressBook.getDetail());
+//        order.setConsignee(addressBook.getConsignee());
         // 利用时间戳来生成当前订单的编号
         order.setNumber(String.valueOf(System.currentTimeMillis()));
         order.setUserId(userId);
         order.setStatus(Order.PENDING_PAYMENT); // 刚下单提交，此时是待付款状态
         order.setPayStatus(Order.UN_PAID); // 未支付
         order.setOrderTime(LocalDateTime.now());
+
+        // 生成取餐号
+        String pickupNumber = generatePickupNumber();
+        order.setPickupNumber(pickupNumber);
+
         this.order = order;
         // 4、向订单表插入1条数据
         orderMapper.insert(order);
@@ -403,7 +414,7 @@ public class OrderServiceImpl implements OrderService {
         Order order = new Order();
         order.setId(orderDB.getId());
         order.setStatus(Order.COMPLETED);
-        order.setDeliveryTime(LocalDateTime.now()); // 设置订单完成时间
+        order.setFinishTime(LocalDateTime.now()); // 设置订单完成时间
         orderMapper.update(order);
     }
 
@@ -535,4 +546,21 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    /**
+     * 生成取餐号
+     * @return
+     */
+    private synchronized String generatePickupNumber() {
+        LocalDate today = LocalDate.now();
+        // 如果是新的一天，重置计数器
+        pickupNumberCounter.putIfAbsent(today, 0);
+
+        // 获取当前计数并增加
+        int count = pickupNumberCounter.get(today) + 1;
+        pickupNumberCounter.put(today, count);
+
+        // 格式化取餐号，例如: 0807-001
+        String dateStr = today.format(DateTimeFormatter.ofPattern("MMdd"));
+        return dateStr + "-" + String.format("%03d", count);
+    }
 }

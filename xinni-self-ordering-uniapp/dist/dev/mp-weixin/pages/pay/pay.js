@@ -103,5 +103,5 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     };
   }
 });
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-8a6251df"], ["__file", "D:/hanye-take-out-main/hanye-take-out-main/hanye-take-out-uniapp/src/pages/pay/pay.vue"]]);
+const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__scopeId", "data-v-8a6251df"], ["__file", "D:/xinni-self-ordering-main/xinni-self-ordering/xinni-self-ordering-uniapp/src/pages/pay/pay.vue"]]);
 wx.createPage(MiniProgramPage);

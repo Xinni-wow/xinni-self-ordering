@@ -260,5 +260,5 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
     e: common_vendor.o((...args) => $options.onClick && $options.onClick(...args))
   };
 }
-const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__file", "D:/hanye-take-out-main/hanye-take-out-main/hanye-take-out-uniapp/node_modules/@dcloudio/uni-ui/lib/uni-transition/uni-transition.vue"]]);
+const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render], ["__file", "D:/xinni-self-ordering-main/xinni-self-ordering/xinni-self-ordering-uniapp/node_modules/@dcloudio/uni-ui/lib/uni-transition/uni-transition.vue"]]);
 wx.createComponent(Component);

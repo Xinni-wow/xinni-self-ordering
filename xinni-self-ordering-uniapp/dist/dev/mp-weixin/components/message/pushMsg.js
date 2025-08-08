@@ -32,7 +32,7 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     return (_ctx, _cache) => {
       return {
         a: common_vendor.o(confirm),
-        b: common_vendor.sr(popup, "1326616b-0", {
+        b: common_vendor.sr(popup, "7cab2945-0", {
           "k": "popup"
         }),
         c: common_vendor.p({
@@ -43,5 +43,5 @@ const _sfc_main = /* @__PURE__ */ common_vendor.defineComponent({
     };
   }
 });
-const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "D:/hanye-take-out-main/hanye-take-out-main/hanye-take-out-uniapp/src/components/message/pushMsg.vue"]]);
+const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["__file", "D:/xinni-self-ordering-main/xinni-self-ordering/xinni-self-ordering-uniapp/src/components/message/pushMsg.vue"]]);
 wx.createComponent(Component);

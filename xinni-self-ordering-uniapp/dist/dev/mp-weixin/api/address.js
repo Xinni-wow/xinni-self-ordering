@@ -7,12 +7,6 @@ const addAddressAPI = (address) => {
     data: address
   });
 };
-const getDefaultAddressAPI = () => {
-  return utils_http.http({
-    method: "GET",
-    url: "/user/address/default"
-  });
-};
 const getAddressListAPI = () => {
   return utils_http.http({
     method: "GET",
@@ -49,6 +43,5 @@ exports.addAddressAPI = addAddressAPI;
 exports.deleteAddressAPI = deleteAddressAPI;
 exports.getAddressByIdAPI = getAddressByIdAPI;
 exports.getAddressListAPI = getAddressListAPI;
-exports.getDefaultAddressAPI = getDefaultAddressAPI;
 exports.updateAddressAPI = updateAddressAPI;
 exports.updateDefaultAddressAPI = updateDefaultAddressAPI;
