@@ -9,9 +9,11 @@ import com.xinni.utils.DeepSeekClient;
 import com.xinni.vo.DishVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
@@ -38,11 +40,23 @@ public class RecommendationServiceImpl implements RecommendationService {
         return deepSeekClient.getRecommendation(prompt);
     }
 
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
+
     @Override
     public List<DishVO> getAllAvailableDishes() {
+        String cacheKey = "available_dishes";
+        // 从缓存获取
+        List<DishVO> dishes = (List<DishVO>) redisTemplate.opsForValue().get(cacheKey);
+        if (dishes != null) {
+            return dishes;
+        }
+        // 缓存未命中，查库并写入缓存（设置10分钟过期）
         Dish dish = new Dish();
-        dish.setStatus(StatusConstant.ENABLE); // 只查询启售状态的菜品
-        return dishService.getDishesWithFlavorById(dish);
+        dish.setStatus(StatusConstant.ENABLE);
+        dishes = dishService.getDishesWithFlavorById(dish);
+        redisTemplate.opsForValue().set(cacheKey, dishes, 10, TimeUnit.MINUTES);
+        return dishes;
     }
 
     @Override

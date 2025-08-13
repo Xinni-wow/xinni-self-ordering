@@ -21,6 +21,9 @@
     <image src="../../static/images/home.png" mode="scaleToFill" />
     <view class="title" @tap="toOrderPage">点击开始点餐</view>
   </view>
+  <navigator url="/pages/recommendation/recommendation" class="recommendation-entry">
+  <text>智能推荐</text>
+</navigator>
 </template>
 
 <script setup lang="ts">

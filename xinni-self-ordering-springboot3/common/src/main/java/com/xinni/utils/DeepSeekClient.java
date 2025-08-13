@@ -6,7 +6,9 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.client.RestTemplate;
+import reactor.core.publisher.Mono;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,7 +28,11 @@ public class DeepSeekClient {
     @Value("${deepseek.model:DeepSeek-V3}")
     private String model;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final WebClient webClient;
+
+    public DeepSeekClient(WebClient.Builder webClientBuilder) {
+        this.webClient = webClientBuilder.build();
+    }
 
     public String getRecommendation(String prompt) {
         try {
@@ -54,15 +60,14 @@ public class DeepSeekClient {
             requestBody.put("temperature", 0.6);
             requestBody.put("stream", false);
 
-            // 设置请求头
-            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
-            headers.set("Content-Type", "application/json");
-            headers.set("Authorization", "Bearer " + apiKey);
-
-            org.springframework.http.HttpEntity<Map<String, Object>> request =
-                    new org.springframework.http.HttpEntity<>(requestBody, headers);
-
-            String response = restTemplate.postForObject(apiUrl, request, String.class);
+            String response = webClient.post()
+                    .uri(apiUrl)
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + apiKey)
+                    .bodyValue(requestBody)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block(); // 阻塞以获取结果，保持原有同步接口
 
             // 解析响应
             JSONObject jsonObject = JSON.parseObject(response);
@@ -75,6 +80,9 @@ public class DeepSeekClient {
                 log.error("DeepSeek API返回空结果: {}", response);
                 return "推荐服务暂时不可用，请稍后再试";
             }
+        } catch (WebClientResponseException e) {
+            log.error("调用DeepSeek API失败，状态码: {}，响应内容: {}", e.getStatusCode(), e.getResponseBodyAsString(), e);
+            return "推荐服务暂时不可用，请稍后再试";
         } catch (Exception e) {
             log.error("调用DeepSeek API失败", e);
             return "推荐服务暂时不可用，请稍后再试";
