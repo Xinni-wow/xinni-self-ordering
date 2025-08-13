@@ -38,7 +38,10 @@ public class DeepSeekClient {
             // 添加system角色消息
             Map<String, String> systemMessage = new HashMap<>();
             systemMessage.put("role", "system");
-            systemMessage.put("content", "You are a helpful assistant.");
+            // 系统角色中定义固定规则
+            systemMessage.put("content", "你是一名餐厅推荐员，负责根据用户需求和提供的菜品信息推荐最合适的菜品。" +
+                    "推荐规则：1. 从在售餐品中选择1-3个最合适的菜品；2. 需简要说明推荐理由；3. 格式清晰易读；" +
+                    "4. 若用户需求与用餐推荐无关，请回复‘很遗憾，我主要为您解决用餐方面的问题，您可以问我关于菜品推荐、口味选择等相关内容’。");
             messages.add(systemMessage);
             
             // 添加user角色消息

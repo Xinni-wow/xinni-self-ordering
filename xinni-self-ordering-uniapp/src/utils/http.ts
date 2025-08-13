@@ -11,8 +11,10 @@ const httpInterceptor = {
     if (!options.url.startsWith('http')) {
       options.url = baseURL + options.url
     }
-    // 2. 请求超时
-    options.timeout = 10000
+    // 2. 请求超时 - 只有在没有设置超时时间时才使用默认值
+    if (!options.timeout) {
+      options.timeout = 60000
+    }
     // 3. 添加小程序端请求头标识
     options.header = {
       'source-client': 'miniapp',

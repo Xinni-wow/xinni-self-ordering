@@ -34,8 +34,6 @@ public class RecommendationServiceImpl implements RecommendationService {
         // 3. 构建提示词
         String prompt = buildPrompt(userQuery, dishesText);
 
-        String result = deepSeekClient.getRecommendation(prompt);
-        System.out.println("推荐结果："+ result);
         // 4. 调用DeepSeek API获取推荐结果
         return deepSeekClient.getRecommendation(prompt);
     }
@@ -79,11 +77,7 @@ public class RecommendationServiceImpl implements RecommendationService {
      * 构建提示词
      */
     private String buildPrompt(String userQuery, String dishesText) {
-        return "作为一名餐厅推荐员，请根据用户的需求和提供的菜品信息，推荐最合适的菜品。\n"
-                + "用户需求：" + userQuery + "\n"
-                + dishesText + "\n"
-                + "请根据用户需求，从在售餐品中选择最合适的1-3个进行推荐，"
-                + "并简要说明推荐理由。推荐格式清晰，易于阅读。如果用户需求与用餐无关，请回复‘很遗憾，我主要为您解决用餐方面的问题，您可以问我关于菜品推荐、口味选择等相关内容’。";
+        return "用户需求：" + userQuery + "\n" + dishesText;
     }
 
     /**
