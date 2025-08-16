@@ -8671,6 +8671,7 @@ exports.index = index;
 exports.initVueI18n = initVueI18n;
 exports.messages = messages;
 exports.n = n;
+exports.nextTick$1 = nextTick$1;
 exports.o = o;
 exports.onHide = onHide;
 exports.onLaunch = onLaunch;

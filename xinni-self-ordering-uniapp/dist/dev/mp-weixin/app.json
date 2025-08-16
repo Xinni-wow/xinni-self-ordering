@@ -13,7 +13,8 @@
     "pages/pay/pay",
     "pages/orderDetail/orderDetail",
     "pages/history/history",
-    "pages/updateMy/updateMy"
+    "pages/updateMy/updateMy",
+    "pages/recommendation/recommendation"
   ],
   "window": {
     "navigationBarTextStyle": "white",

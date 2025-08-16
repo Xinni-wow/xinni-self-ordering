@@ -1,0 +1,1 @@
+<view class="data-v-a20ca00a"><view class="{{['float-sphere', 'data-v-a20ca00a', a && 'dragging']}}" style="{{'right:' + b + ';' + ('bottom:' + c)}}" bindtouchstart="{{d}}" catchtouchmove="{{e}}" bindtouchend="{{f}}" bindtap="{{g}}"><image class="sphere-icon data-v-a20ca00a" src="/static/images/robot.png" mode="aspectFit"></image></view></view>

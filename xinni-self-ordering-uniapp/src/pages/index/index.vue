@@ -20,6 +20,7 @@
     </swiper>
     <image src="../../static/images/home.png" mode="scaleToFill" />
     <view class="title" @tap="toOrderPage">点击开始点餐</view>
+    <RecommendationAI />
   </view>
   <navigator url="/pages/recommendation/recommendation" class="recommendation-entry">
   <text>智能推荐</text>
@@ -27,6 +28,8 @@
 </template>
 
 <script setup lang="ts">
+import RecommendationAI from "@/components/RecommendationAI.vue";
+
 const toOrderPage = () => {
   uni.navigateTo({
     url: '/pages/order/order',
