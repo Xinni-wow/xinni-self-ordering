@@ -1,0 +1,31 @@
+<mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36 Edg/139.0.0.0" version="28.1.1">
+  <diagram name="第 1 页" id="5mCxrqloH2qk-mehDYs9">
+    <mxGraphModel dx="778" dy="540" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="SMb74sRTpoAXpH5g-2Ui-2" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="1">
+          <mxGeometry x="223" y="379" width="104" height="73" as="geometry" />
+        </mxCell>
+        <mxCell id="SMb74sRTpoAXpH5g-2Ui-3" value="门店顾客&lt;div&gt;&lt;br&gt;&lt;/div&gt;" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="540" y="41" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="SMb74sRTpoAXpH5g-2Ui-4" value="门店员工" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+          <mxGeometry x="245" y="41" width="30" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="SMb74sRTpoAXpH5g-2Ui-11" value="" style="group" vertex="1" connectable="0" parent="1">
+          <mxGeometry x="106" y="140" width="580" height="146" as="geometry" />
+        </mxCell>
+        <mxCell id="SMb74sRTpoAXpH5g-2Ui-1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" vertex="1" parent="SMb74sRTpoAXpH5g-2Ui-11">
+          <mxGeometry width="580" height="146" as="geometry" />
+        </mxCell>
+        <mxCell id="SMb74sRTpoAXpH5g-2Ui-5" value="前端" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="SMb74sRTpoAXpH5g-2Ui-11">
+          <mxGeometry width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="SMb74sRTpoAXpH5g-2Ui-13" value="" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="SMb74sRTpoAXpH5g-2Ui-11">
+          <mxGeometry x="58" y="13.75" width="198" height="122.25" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
